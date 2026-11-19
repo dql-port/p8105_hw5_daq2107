@@ -158,7 +158,7 @@ Great! Now we can proceed to tidy our data. Following the examples covered in th
 
 Moreover, we see that our data is panel data, or in other words, it is in wide format. Thus, we can use our old and reliable _pivot_longer()_ function to grab all weekly observations and put them in long format, and that way, our tidy data frame should contain the study group, the week, the subject ID, and what the outcome was.
 
-```{r purrr_map}
+```{r tidying_long}
 
 # Creating a new tidy data frame for my longitudinal data:
 
@@ -176,7 +176,7 @@ tidy_long_df =
   # Now we need to change our data from the 'wide' format to 'long' format using our well-known 'pivot_longer()' function:
   
   pivot_longer(
-    week1:week8, # Grabbing the number of weeks included in the df
+    week_1:week_8, # Grabbing the number of weeks included in the df
     names_to = "week",
     values_to = "outcome",
     names_prefix = "week_"
@@ -196,29 +196,59 @@ head(tidy_long_df, 5)
 
 ```
 
+### Plotting Subjects Over Time
 
+Now that we have our data tidied, we can proceed to create an _speguetti_ plot (using ggplot), which is simply a plot to visualize outcomes across time where each line represents a different participant. We will make use of _geom_path()_ to connect observations for the same subject. This, combined with study branch, will allow us to look at differences for each individual participant and also across study arms. Moreover, I am also using _theme_minimal()_ for better aesthetics, just like I did in the last couple of homeworks.
 
-```{r tidying_long}
+Since we are looking at the data per study group (i.e., control or experiment), we need to facet by the _group_ variable in our data frame.
 
+```{r spaguetti_plot}
 
-# spaghetti plot
- outcome vs. week
- 
- geom_point and geom_path
- 
- facet by group
+# Creating the spaguetti plot from the tidy data frame created above:
 
+tidy_long_df %>% 
+  
+  # Making use of case match to make sure my study arms are appropriately labeled. Same process as in previous homeworks:
+  
+  mutate(
+    group = case_match(
+      group,
+      "con" ~ "Control",
+      "exp" ~ "Experiment"
+    )
+  ) %>% 
+  
+  # We use the 'subject' variable we created above 
+  
+  ggplot(aes(x = week, y = outcome, group = subject, color = subject)) + 
+  geom_point() +
+  geom_path() + 
+  facet_grid (. ~ group) + 
+  theme_minimal() +
+  theme(legend.position = "none") + # Removing the subject legends
+  labs(
+    title = "Subject Outcome Across Time by Study Branch",
+    x = "Week Number",
+    y = "Subject Outcome"
+  )
 
 ```
+#### keep legend for each study subjec or remove?
+
+
+**Describing the Plot:** As we can see from the trend above, the study subjects in the control arm are...
+
+
+
 
 
 
 
 ```{r running_simulation}
 
-#problem 3
+#problem 3 notes
 
-run a simulation, we need to create a function just like we did in problem one
+run a simulation need to create a function just like we did in problem one
 
 sample of 30, sigma = 5 and alpha = 0.05
 )
