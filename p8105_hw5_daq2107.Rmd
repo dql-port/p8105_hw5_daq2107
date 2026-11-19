@@ -127,11 +127,61 @@ birthday_groups %>%
 
 ```
 
-## Problem 2: Birthday Probability
+## Problem 2: Analyzing Longitudinal Study Data
 
-For this problem, 
+For this problem, we can use a very similar approach like the one used in the _Iterations and List Columns_. Just as the hint provided states, we can make use of the _list.files()_ function in order to read all of our files at once, for both the experimental and the control arms of the study:
+
+```{r reading_files}
+
+# Using a very similar approach as the one covered in lecture:
+
+full_long_names = 
+  tibble(
+    files = list.files("./HW5_Data/"),
+    path = str_c("./HW5_Data/", files)
+  ) %>% 
+  mutate(data = map(path, read_csv)) %>% 
+  unnest(data)
+
+# Inspecting the data frame:
+
+head(full_long_names, 5)
+
+names(full_long_names)
+
+```
+
+Great! Now that we have read all the files names into a single data frame, we can use _purrr::map_ to iterate through each of the names and be able to load our data at once:
+
+```{r purrr_map}
+
+# Saving my result as a new variable per the instructions, and using the 'purrr' package with the
+# 'map' function:
+
+purrr_long =
+full_long_names %>% 
+  mutate(
+    long_data = purrr::map(full_long_names, read_csv)
+  )
+  
 
 
+
+```
+
+
+```{r}
+
+#tidying 
+
+pivot long
+
+names to
+
+
+
+
+```
 
 
 
