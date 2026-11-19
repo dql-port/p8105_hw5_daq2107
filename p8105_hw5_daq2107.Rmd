@@ -9,10 +9,129 @@ output: github_document
 
 ```{r libraries}
 
-library(tidyverse) 
+library(tidyverse) # For piping and ggplot
 
 ```
 
 ## Problem 1: Birthday Probability
+
+For this problem, we are writing a function that, given a fixed number of people, _n_, we can obtain the probability that at least two of those people share a birthday. Note that we are assuming a uniform distribution of birthday across the 365 days of the year, and we do not consider leap years.
+
+Instead of directly calculating the probability, we can make use of a simulation for a group of _n_ people where we randomly assing them a birthday. In this case, instead of directly using dates, we can just use the range 1:365 corresponding to the days of the year. For this we need to also double check that our sampling allows for repeats, since we are checking for the probability of duplicate birthdays. This is done with the 'replace' parameter (see code below).
+
+It is important to note that our old and reliable _rnorm()_ function does not work for this problem since we are not getting values from a normal distribution, so I looked online at examples of how to take random samples and saw the use of the _sample()_ function here:
+
+https://pubs.wsb.wisc.edu/academics/analytics-using-r-2019/draw-a-random-sample.html
+
+From here we can write a function that helps us determine the birthday duplicates, so we write a function that takes the parameter value of 'n' birthdays and then calculates the probability of appearing more than once. I found a useful post in stack overflow to check for this and grabbed inspiration for my code:
+
+https://stackoverflow.com/questions/71083995/identifying-duplicates-in-a-list-of-character-vectors-in-r
+
+To summarize: the function takes the fixed group size, then randomly generates a day out of 365 for each person, checks for duplication, returns Boolean value:
+
+
+##### do we need to account for non-numeric entries?
+
+
+
+```{r any_duplicates}
+
+# Taking my 'n' parameter, corresponding to the fixed amount of people in the room:
+
+birthday_dupl = function(n) {
+  
+  # We first and foremost need to ensure the value entered is numeric,
+  # so we can do a similar check as the one we covered during our Writing Functions lecture:
+  
+   if (!is.numeric(n)) {
+    stop("Input must be numeric. Try again.")
+   }
+  
+  # Now, we need to create a random sample for the birthdays given the range of the year.
+  # We can use 'sample()' per the blog post I found using the range of 1-365 corresponding to the days of the year,
+  # Moreover, we need to make sure we use 'replace = TRUE' in order to allow for potential duplicates:
+  
+  birth_sample = sample(1:365, size = n, replace = TRUE)
+  
+  # Based on the StackOverflow article above, I can use the 'duplicated()' function to check for any duplicated values. Per the post, using 'any()' will return a Boolean TRUE or FALSE value:
+  
+  any_dupl = any(duplicated(birth_sample))
+  
+  # We can now just simply ask to return this Boolean:
+  
+  any_dupl
+  
+}
+
+
+# Testing my function:
+
+birthday_dupl(500)
+
+
+```
+
+Voila! We have created the function to check if there are duplicate birthdays in the fixed group. Now, to check for the actual probability, we can use a similar approach like the one we covered in the _Simulation_ lecture, where we used the _expand_grid()_ function to run the 10,000 iterations specified in the assignment instructions. This will be done for groups of sizes between 2-50 people, and we can then use the function we just created above on each:
+
+```{r thousands_times}
+
+# Just like we did in lecture, we need to set the seed to make sure we are getting the same results:
+
+set.seed(1)
+
+# Using 'expand_grid()' just like we did for the Simulation lecture:
+
+sim_bd = 
+  expand_grid(
+    group = 2:50, # Using the range provided in the instructions
+    iter = 1:10000
+  ) %>% 
+  
+  #For this I first tried using the 'map()' function we covered in lecture, but my plot was not working. Then I did a quick Google search and saw that, for Boolean/logical values, I actually need to use the 'map_lgl()' function:
+  
+  mutate(
+    dupl_map = map_lgl(group, birthday_dupl) #Using same approach to mapping as in lecture
+  )
+
+# Let's examine:
+
+head(sim_bd, 5)
+
+```
+
+Now, from here, I can calculate the probability for each of the groups. Luckily, the simulation above created a data frame where each row is an iteration for a particular group size. Since we used the duplication assessor function earlier, our simulation returns Boolean values to denote if there is a duplicate or not. We can thus group by our group sizes and just take the mean of the Boolean values across the iterations to get our probability:
+
+```{r probability_plot}
+
+# Creating the data frame with grouped by group size:
+
+birthday_groups = 
+  sim_bd %>% # Using the data frame from the simulation we just ran
+  group_by(group) %>% # Grouping by group sizes
+  summarize(
+    bd_prob = mean(dupl_map) #Obtaining the probability simply by getting the mean of the Boolean values
+  )
+
+# We can now create the plot of the probability distribution using our old and reliable 'ggplot':
+
+birthday_groups %>% 
+  ggplot(aes(x = group, y = bd_prob)) + 
+  geom_line() + # Showing trend line
+  geom_point() + # Putting all our points in scatter plot form
+  theme_minimal() + #Using this like I did in Homework 4
+  labs(
+    title = "Probability Distribution of Two Birthdays Shared in a Random Sample",
+    x = "Group Size",
+    y = "Probability of Two Birthdays Shared"
+  )
+
+```
+
+## Problem 2: Birthday Probability
+
+For this problem, 
+
+
+
 
 
