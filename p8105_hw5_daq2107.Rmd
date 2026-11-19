@@ -1,0 +1,18 @@
+---
+title: "p8105_hw5_daq2107"
+author: "Diego A. Quintana Licona"
+date: "2026-11-19"
+output: github_document
+---
+
+## Loading necessary libraries for this assignment:
+
+```{r libraries}
+
+library(tidyverse) 
+
+```
+
+## Problem 1: Birthday Probability
+
+
