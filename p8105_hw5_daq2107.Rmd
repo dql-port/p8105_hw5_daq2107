@@ -233,13 +233,12 @@ tidy_long_df %>%
   )
 
 ```
-#### keep legend for each study subjec or remove?
 
+**Describing the Plot:** As we can see from the trend above, the study subjects in the control arm have highly variable outcomes across the eight weeks of the study duration, with a minimum value of `r min(tidy_long_df$outcome[tidy_long_df$group == "Control"], na.rm = TRUE)` and a maximum value of `r max(tidy_long_df$outcome[tidy_long_df$group == "Control"], na.rm = TRUE)`. Despite this high variability, there is no clear increasing or decreasing trend in the study outcome during the duration of the study.
 
-**Describing the Plot:** As we can see from the trend above, the study subjects in the control arm are...
+On the other hand, the participants in the experimental arm of the study display an increasing trend in the study outcome across the eight weeks of the study. The maximum outcome value in this arm at Week 8 was `r max(tidy_long_df$outcome[tidy_long_df$group == "Experiment" & tidy_long_df$week == 8], na.rm = TRUE)`, which is `r max(tidy_long_df$outcome[tidy_long_df$group == "Experiment" & tidy_long_df$week == 8], na.rm = TRUE) -max(tidy_long_df$outcome[tidy_long_df$group == "Control" & tidy_long_df$week == 8], na.rm = TRUE)` units difference from the higher value on the control arm at Week 8.
 
-
-###### need to comment on differences between groups
+Overall, based on this data, I would say that there is a clear difference in outcomes between both study arms, with the experimental arm showing a clear increasing trend. We then may have preliminary evidence to determine a potential association between the treatment and outcome of interest, but not yet able to determine full causality.
 
 
 ## Problem 3: Analyzing Longitudinal Study Data
