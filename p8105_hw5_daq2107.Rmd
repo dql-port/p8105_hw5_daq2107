@@ -243,19 +243,47 @@ tidy_long_df %>%
 
 
 
+## Problem 3: Analyzing Longitudinal Study Data
+
+### Creating a Function for Simulation 
+
+For this problem, we can use a very similar approach like the ones that we utilized for Problem 1, were we create a function to run a t-test given a changeable value for _μ_ and fixed values for both _σ_ and _n_. This is very similar to the example we covered in our _Simulation_ lecture. The main difference compared with Problem 1 is that, in this case, we _do_ make use of our old and reliable _rnorm()_ function:
 
 ```{r running_simulation}
 
-#problem 3 notes
+# Creating a function to run our simulation, where our input parameter
+# will be the value of mu. Note that, per the instructions, we are fixing
+# the values for our 'n' to be 30, and our 'sigma' to be 5:
 
-run a simulation need to create a function just like we did in problem one
+sim_p3 = function(mu_value, n = 30, sigma = 5) {
+  
+  # We can now generate our random sample with our fixed number of observations and sigma:
+  
+  sim_data = tibble(
+     x = rnorm(n, mean = mu_value, sd = sigma),
+  )
+  
+  # Now, per the hint provided, we can just run a t-test to assess the null
+  # hypothesis that the true mu = 0.
+  
+  # Notice that for the t-test we are not using the whole tibble but just the
+  # x value we created above for the simulation data:
+    
+  t_test = t.test(sim_data$x, mu = 0) %>% 
+    broom::tidy()  # Cleaning our results, per assignment hint
+  
+# Now, per the assignment instructions, we are also asked to keep the sample mu and p-value. Recall we obtained the estimate and the p-value from the broom::tidy step above:
+    
+  t_test %>% 
+    select(sample_mu = estimate, p_value = p.value)
+  
+}
 
-sample of 30, sigma = 5 and alpha = 0.05
-)
+# Let's now test our function with μ = 0:
 
-define the 
+set.seed(1) # Setting seed so results are reproducible
 
-
+sim_p3(0)
 
 ```
 
