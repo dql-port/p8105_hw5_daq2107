@@ -378,9 +378,9 @@ p3_plot_2 =
   geom_point(color = "darkgreen") +
   theme_minimal() +
   labs(
-    title = "Average Estimate μ-hat vs. True μ Value",
+    title = "Average Estimated μ-hat vs. True μ Value",
     x = "True μ",
-    y = "Average Estimate μ-hat",
+    y = "Average Estimated μ-hat",
   )
 
 # Now let's visualize the plot:
@@ -389,15 +389,90 @@ p3_plot_2
 
 ```
 
-Now, we can make a second plot following the same process as above, but only for the samples in which we rejected the null. I can make use of the _sim_p3_reject_ data frame I created above, since this already contains a variable assessing if we can reject the null hypothesis:
+Now, we can make a second plot following the same process as above, but only for the samples in which we rejected the null. We can thus use an almost identical approach as to how the _sim_p3_reject_ data frame was created above, since this data frame contains a variable assessing if we can reject the null hypothesis:
 
 ```{r muhat_vs_mu_rejet}
 
+p3_plot_3 =
+  sim_p3_results %>% 
+  filter(p_value < 0.05) %>%  # keeping only samples where null was rejected
+  group_by(mu_value) %>% 
+  summarize(
+    mean_sample_mu = mean(sample_mu) # getting our averages
+  ) %>% 
+  ggplot(aes(x = mu_value, y = mean_sample_mu)) + 
+  geom_line(color = "lightblue") + 
+  geom_point(color = "darkblue") +
+  theme_minimal() +
+  labs(
+    title = "Average Estimated μ-hat vs. True μ Value*",
+    subtitle = "*Only Samples Where Null Hypothesis Was Rejected",
+    x = "True μ",
+    y = "Average Estimated μ-hat",
+  )
 
+# Now let's visualize the plot:
+
+p3_plot_3
+
+```
+
+To better visualize the contrast between these two plots, let's create an overlayed plot. We can make use of most of the code already written above:
+
+```{r overlayed_plot}
+
+# Using same pipe process as first plot:
+
+df_plot2 =
+  sim_p3_results %>% 
+  group_by(mu_value) %>% 
+  summarize(
+    mean_sample_mu = mean(sample_mu) # getting our average values
+  ) %>% 
+  mutate(
+    which_plot = "All" # Creating identifying variable
+  )
+
+# Using same pipe process as second plot:
+
+df_plot3 = 
+  sim_p3_results %>% 
+  filter(p_value < 0.05) %>%  # keeping only samples where null was rejected
+  group_by(mu_value) %>% 
+  summarize(
+    mean_sample_mu = mean(sample_mu) # getting our averages
+  ) %>%
+  mutate(
+    which_plot = "Rejected Only" # Creating identifying variable
+  )
+
+# Merging my data frames:
+
+df_plot4 =
+  bind_rows(df_plot2, df_plot3)
+
+# And now making my overlapped po, again, using same structure as plots above:
+
+p3_plot_4 =
+  df_plot4 %>% 
+  ggplot(aes(x = mu_value, y = mean_sample_mu, color = which_plot)) + 
+  geom_line() + 
+  geom_point() +
+  theme_minimal() +
+  labs(
+    title = "Average Estimated μ-hat vs. True μ Value*",
+    subtitle = "*Only Samples Where Null Hypothesis Was Rejected",
+    x = "True μ",
+    y = "Average Estimated μ-hat",
+    color = "Sample Type"
+  )
+
+# Now let's visualize the plot:
+
+p3_plot_4
 
 
 ```
 
-
-
+**Plots Description & Question Answer:** From the 
 
