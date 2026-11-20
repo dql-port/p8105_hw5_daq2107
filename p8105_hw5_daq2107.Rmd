@@ -23,7 +23,7 @@ It is important to note that our old and reliable _rnorm()_ function does not wo
 
 https://pubs.wsb.wisc.edu/academics/analytics-using-r-2019/draw-a-random-sample.html
 
-From here we can write a function that helps us determine the birthday duplicates, so we write a function that takes the parameter value of 'n' birthdays and then calculates the probability of appearing more than once. I found a useful post on Stack o¿Overflow to check for this and grabbed inspiration for my code:
+From here we can write a function that helps us determine the birthday duplicates, so we write a function that takes the parameter value of 'n' birthdays and then tells us if at least one of the birthdays appears more than once. I found a useful post on Stack Overflow to check for this and grabbed inspiration for my code:
 
 https://stackoverflow.com/questions/71083995/identifying-duplicates-in-a-list-of-character-vectors-in-r
 
@@ -58,7 +58,6 @@ birthday_dupl = function(n) {
   any_dupl
   
 }
-
 
 # Testing my function:
 
@@ -122,6 +121,7 @@ birthday_groups %>%
   )
 
 ```
+
 **Plot Description:** As we can see from the plot above, the probability that two people in the same room share the same birthday increases as the group size (n) increases. It is important to note that the increase is non-linear, and follows a somewhat sigmoidal shape. In the case of very small groups, the probability is close to zero, and then increases fast once the group size reaches around n = 10. We can see that the probability is about 50% around when n = 25, and it becomes very close to 100% once you reach 50 people. 
 
 ## Problem 2: Analyzing Longitudinal Study Data
@@ -160,7 +160,7 @@ names(full_long_names)
 
 Great! Now we can proceed to tidy our data. Following the examples covered in the _Iteration and List Columns_, we notice that some important variables are contained within others, such as the name, which includes the type of study group (i.e., control or experiment), and the subject ID number.
 
-Moreover, we see that our data is panel data, or in other words, it is in wide format. Thus, we can use our old and reliable _pivot_longer()_ function to grab all weekly observations and put them in long format, and that way, our tidy data frame should contain the study group, the week, the subject ID, and what the outcome was.
+Moreover, we see that our data is panel data, where each weekly observation is saved in wide format, with each week being a separate column. This is hard to manage. Thus, we can use our old and reliable _pivot_longer()_ function to grab all weekly observations and put them in long format, and that way, our tidy data frame should contain the study group, the week, the subject ID, and what the outcome was.
 
 ```{r tidying_long}
 
@@ -205,11 +205,11 @@ head(tidy_long_df, 5)
 
 ### Plotting Subjects Over Time
 
-Now that we have our data tidied, we can proceed to create an _speguetti_ plot (using ggplot), which is simply a plot to visualize outcomes across time where each line represents a different participant. We will make use of _geom_path()_ to connect observations for the same subject. This, combined with study branch, will allow us to look at differences for each individual participant and also across study arms. Moreover, I am also using _theme_minimal()_ for better aesthetics, just like I did in the last couple of homeworks.
+Now that we have our data tidied, we can proceed to create an _spaghetti_ plot (using ggplot), which is simply a plot to visualize outcomes across time where each line represents a different participant. We will make use of _geom_path()_ to connect observations for the same subject. This, combined with study branch, will allow us to look at differences for each individual participant and also across study arms. Moreover, I am also using _theme_minimal()_ for better aesthetics, just like I did in the last couple of homeworks.
 
 Since we are looking at the data per study group (i.e., control or experiment), we need to facet by the _group_ variable in our data frame.
 
-```{r spaguetti_plot}
+```{r spaghetti_plot}
 
 # Creating the spaguetti plot from the tidy data frame created above:
 
@@ -221,8 +221,8 @@ tidy_long_df %>%
   mutate(
     group = case_match(
       group,
-      "con" ~ "Control",
-      "exp" ~ "Experiment"
+      "con" ~ "Control Arm",
+      "exp" ~ "Experimental Arm"
     )
   ) %>% 
   
@@ -236,7 +236,7 @@ tidy_long_df %>%
   theme(legend.position = "none", # Removing the subject legends
         plot.title = element_text(hjust = 0.5)) + # Centering the title
   labs(
-    title = "Subject Outcome Across Time by Study Branch",
+    title = "Subject Outcome Across Time by Study Arm",
     x = "Week Number",
     y = "Subject Outcome"
   )
@@ -245,16 +245,16 @@ tidy_long_df %>%
 
 **Describing the Plot:** As we can see from the trend above, the study subjects in the control arm have highly variable outcomes across the eight weeks of the study duration, with a minimum value of `r min(tidy_long_df$outcome[tidy_long_df$group == "con"], na.rm = TRUE)` and a maximum value of `r max(tidy_long_df$outcome[tidy_long_df$group == "con"], na.rm = TRUE)`. Despite this high variability, there is no clear increasing or decreasing trend in the study outcome during the duration of the study.
 
-On the other hand, the participants in the experimental arm of the study display an increasing trend in the study outcome across the eight weeks of the study. The maximum outcome value in this arm at Week 8 was `r max(tidy_long_df$outcome[tidy_long_df$group == "exp" & tidy_long_df$week == 8], na.rm = TRUE)`, which is `r max(tidy_long_df$outcome[tidy_long_df$group == "exp" & tidy_long_df$week == 8], na.rm = TRUE) -max(tidy_long_df$outcome[tidy_long_df$group == "con" & tidy_long_df$week == 8], na.rm = TRUE)` units difference from the higher value on the control arm at Week 8.
+On the other hand, the participants in the experimental arm of the study display an increasing trend in the study outcome across the eight weeks of the study. The maximum outcome value in this arm at Week 8 was `r max(tidy_long_df$outcome[tidy_long_df$group == "exp" & tidy_long_df$week == 8], na.rm = TRUE)`, which is `r max(tidy_long_df$outcome[tidy_long_df$group == "exp" & tidy_long_df$week == 8], na.rm = TRUE) -max(tidy_long_df$outcome[tidy_long_df$group == "con" & tidy_long_df$week == 8], na.rm = TRUE)` units higher than the highest value in the control arm at Week 8.
 
-Overall, based on this data, I would say that there is a clear difference in outcomes between both study arms, with the experimental arm showing a clear increasing trend. We then may have preliminary evidence to determine a potential association between the treatment and outcome of interest, but not yet able to determine full causality.
+Overall, based on this data, I would suggest that there is a clear difference in outcome trends between both study arms, with the experimental arm showing a consistent increasing trend across time. We then may have preliminary evidence to determine a potential association between the treatment and outcome of interest, but not yet able to determine full causality.
 
 
-## Problem 3: Analyzing Longitudinal Study Data
+## Problem 3: Analyzing Power Using Simulation
 
 ### Creating a Function for Simulation 
 
-For this problem, we can use a very similar approach like the ones that we utilized for Problem 1, were we create a function to run a t-test given a changeable value for _μ_ and fixed values for both _σ_ and _n_. This is very similar to the example we covered in our _Simulation_ lecture. The main difference compared with Problem 1 is that, in this case, we _do_ make use of our old and reliable _rnorm()_ function:
+For this problem, we can use a very similar approach to the one utilized for Problem 1, where we create a function to run a t-test given a changeable value for _μ_ and fixed values for both _σ_ and _n_. This is very similar to the example we covered in our _Simulation_ lecture. The main difference compared with Problem 1 is that, in this case, we _do_ make use of our old and reliable _rnorm()_ function:
 
 ```{r running_simulation}
 
@@ -267,7 +267,7 @@ sim_p3 = function(mu_value, n = 30, sigma = 5) {
   # We can now generate our random sample with our fixed number of observations and sigma:
   
   sim_data = tibble(
-     x = rnorm(n, mean = mu_value, sd = sigma),
+     x = rnorm(n, mean = mu_value, sd = sigma)
   )
   
   # Now, per the hint provided, we can just run a t-test to assess the null
@@ -297,7 +297,7 @@ sim_p3(0)
 
 ### Creating a Data Frame from Multiple True μ
 
-We have now created a function utilizing the parameters established, and we can now vary the value μ. Now, per the assignment instructios, we can run 5000 iterations for when μ = 0, and then repeat this procedure for μ = {1, 2, 3, 4, 5, 6}.
+We have now created a function utilizing the parameters established, and we can now vary the value μ. Now, per the assignment instructions, we can run 5000 iterations for when μ = 0, and then repeat this procedure for μ = {1, 2, 3, 4, 5, 6}.
 
 To do this, we can use a very similar approach to what we did in Problem 1 and following the _Simulation_ lecture notes. We first start with the _expand_grid()_ function, just like above, and we do 5,000 iterations for each value of μ. We then use the _purrr::map_ function again and we can just simply apply the function we just created above to each simulation. We can thus obtain a data frame where we will list the inputted (true) μ, the sample's μ and the p-value:
 
@@ -334,7 +334,7 @@ Now that we have run the needed simulations, we can make a plot showing the prop
 
 H_0: μ = 0, with α = 0.05
 
-First, we need to calculate the proportion of time the null was rejected or, in other words, the power of the test. We can do this by creating a variabel where we check if the saved p_values for each iteration are below our significance level (α = 0.05), which would allow us to reject the null. Then, we can just simply group the results of our simulation (using _group_by()_) by each true value of μ and calculate the mean of the rejection value just created:
+First, we need to calculate the proportion of time the null was rejected or, in other words, the power of the test. We can do this by creating a variable where we check if the saved p_values for each iteration are below our significance level (α = 0.05), which would allow us to reject the null. Then, we can just simply group the results of our simulation (using _group_by()_) by each true value of μ and calculate the mean of the rejection value just created:
 
 ```{r reject_null}
 
@@ -345,7 +345,7 @@ sim_p3_reject =
   mutate(
     reject = (p_value < 0.05) # this would yield either TRUE or FALSE
   ) %>% 
-  group_by(mu_value) %>% # We can now gorup by our true μ values
+  group_by(mu_value) %>% # We can now group by our true μ values
   summarize(
     reject_prop = mean(reject)
   )
@@ -366,13 +366,13 @@ sim_p3_reject %>%
 
 ```
 
-**Describing the Association:** From the figure above, we can see that there is an undeniable positive association between the effect size (the true value of μ) and power (the proportion of times the null hypothesis gets rejected).
+**Describing the Association:** From the figure above, we can see that there is a clear positive association between the effect size (the true value of μ) and power (the proportion of times the null hypothesis gets rejected).
 
-The more that the true population means starts distancing itself from zero, the proportion of null hypothesis being rejected increases. We can see this rellationship is sigmoidal, and about when true μ = 4, the proportion of all rejected null hypothesis becomes extremely close to 1 (100% of samples).
+The more that the true population mean moves away from zero, the proportion of null hypothesis being rejected increases. We can see this relationship is sigmoidal, and about when true μ = 4, the proportion of all rejected null hypothesis becomes extremely close to 1 (but just below it). Similarly, when true μ = 0, the null hypothesis is true, so at this observation, the probability of rejecting the null hypothesis equals the Type I error rate. Thus, the value on the y-axis is the Type I error value.
 
-### The Fight Between μ̂ against the True μ
+### The Fight Between Estimated μ̂ and True μ
 
-Now, let's create another plot showing the showing the average estimate of μ̂ against the true value of μ. To do this, we can take a similar approach like the one we did above, grouping by the true μ value and then, since we already hae a _sample_mu_ variable, we can simply find the mean of it using _summarize()_. Then, we can just create the plot using ggplot:
+Now, let's create another plot showing the average estimate of μ̂ against the true value of μ. To do this, we can take a similar approach like the one we did above, grouping by the true μ value and then, since we already have a _sample_mu_ variable, we can simply find the mean of it using _summarize()_. Then, we can just create the plot using ggplot:
 
 ```{r muhat_vs_mu}
 
@@ -416,8 +416,8 @@ p3_plot_3 =
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5)) + # Centering the title
   labs(
-    title = "Average Estimated μ-hat vs. True μ Value*",
-    subtitle = "*Only Samples Where Null Hypothesis Was Rejected",
+    title = "Average Estimated μ-hat vs. True μ Value *",
+    subtitle = "* Only Samples Where Null Hypothesis Was Rejected",
     x = "True μ",
     y = "Average Estimated μ-hat",
   )
@@ -428,7 +428,7 @@ p3_plot_3
 
 ```
 
-To better visualize the contrast between these two plots, let's create an overlayed plot. We can make use of most of the code already written above:
+To better visualize the contrast between these two plots, let's create an overlaid plot. We can make use of most of the code already written above:
 
 ```{r overlayed_plot}
 
@@ -462,7 +462,7 @@ df_plot3 =
 df_plot4 =
   bind_rows(df_plot2, df_plot3)
 
-# And now making my overlapped po, again, using same structure as plots above:
+# And now making my overlapped plot, again, using same structure as plots above:
 
 p3_plot_4 =
   df_plot4 %>% 
@@ -472,7 +472,7 @@ p3_plot_4 =
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5)) + # Centering the title
   labs(
-    title = "Average Estimated μ-hat vs. True μ Value*",
+    title = "Average Estimated μ-hat vs. True μ Value",
     x = "True μ",
     y = "Average Estimated μ-hat",
     color = "Sample Type"
@@ -486,11 +486,11 @@ p3_plot_4
 ```
 
 **Plots Description & Question Answer:** 
-The sample average of μ-hat across tests for which the null is rejected is only approximately equal to the true value of μ when the true μ is relatively large (μ = {4, 5, 6}). 
+The sample average of μ-hat across tests for which the null is rejected is only approximately equal to the true value of μ when the true μ is relatively large (μ = {4, 5, 6}), and when the true μ = 0.
 
-As we can see from the three plots above, when considering all the samples, the values for the estimated μ-hat almost perfectly align with the values of the true μ. This result was interesting to me, but I believe it makes sense since, when we average all 5,000 simulated samples, for each value of μ — and just like we saw in our _Simulation_ lecture — the sample mean estimates are expected to be more centered around the true population mean.
+As we can see from the three plots above, when considering all the samples, the values for the estimated μ-hat almost perfectly align with the values of the true μ. This result, while interesting, also makes sense since, when we average all 5,000 simulated samples, for each value of μ — and just like we saw in our _Simulation_ lecture — the sample mean estimates are expected to be more centered around the true population mean. Also note that, when true μ = 0, the average estimated mean for the rejected samples is also zero since this test is two-sided test and, when taking thousands of simulated samples, the samples that reject and fail to reject the null balance/cancel each other out.
 
-Moreover, we can see that when we only take the samples for which we reject the null hypothesis, the average estimated μ-hat deviates from the true μ values, in particular when μ = {1, 2 3}. This also makes sense, and it is actually in agreement with what we observed in our Power vs. μ graph: when we have low power, only samples with extreme estimated  μ-hat values will be able to yield a p-value that is below the 0.05 significance threshold. However, as we increase in our true μ values, power (the proportion of null hypothesis rejects) also increases, and thus a greater proportion of the simulated samples will reject the null hypothesis, making very little distinction between the all samples set.
+Moreover, we can see that when we only take the samples for which we reject the null hypothesis, the average estimated μ-hat deviates from the true μ values, in particular when μ = {1, 2, 3}. This also makes sense, and it is actually in agreement with what we observed in our Power vs. μ graph: when we have low power, only samples with extreme estimated  μ-hat values will be able to yield a p-value that is below the 0.05 significance threshold. However, as we increase in our true μ values, power (the probability of rejecting a false null hypothesis) also increases, and thus a greater proportion of the simulated samples will reject the null hypothesis, making the all-samples set and the rejects-only set very similar.
 
 Per the explanation above, we can see that in both the power vs. true effect and in the average estimated μ vs. true μ graphs, it is around true μ = 4 when we lose distinction between the rejected-only averages and the all-sample averages.
 
