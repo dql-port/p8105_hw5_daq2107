@@ -239,7 +239,7 @@ tidy_long_df %>%
 **Describing the Plot:** As we can see from the trend above, the study subjects in the control arm are...
 
 
-
+####### PENDING
 
 
 
@@ -286,4 +286,118 @@ set.seed(1) # Setting seed so results are reproducible
 sim_p3(0)
 
 ```
+
+### Creating a Data Frame from Multiple True μ
+
+We have now created a function utilizing the parameters established, and we can now vary the value μ. Now, per the assignment instructios, we can run 5000 iterations for when μ = 0, and then repeat this procedure for μ = {1, 2, 3, 4, 5, 6}.
+
+To do this, we can use a very similar approach to what we did in Problem 1 and following the _Simulation_ lecture notes. We first start with the _expand_grid()_ function, just like above, and we do 5,000 iterations for each value of μ. We then use the _purrr::map_ function again and we can just simply apply the function we just created above to each simulation. We can thus obtain a data frame where we will list the inputted (true) μ, the sample's μ and the p-value:
+
+```{r multiple_mu}
+
+# Setting seed before starting to allow for reproducibility:
+
+set.seed(1)
+
+# Just like in problem 1, we can create a data frame for the results of our
+# simulation, for all μ values of interest:
+
+sim_p3_results =
+  expand_grid(
+    mu_value = 0:6, # The values of μ we want to check
+    iter = 1:5000 #Iterating 5000 times
+  ) %>% 
+  mutate(
+    estimate_df = map(mu_value, sim_p3) # Using the function we created above
+  ) %>% 
+  unnest(estimate_df)
+
+# Let's visualize our data frame:
+
+head(sim_p3_results, 5)
+
+# Looking good!
+
+```
+
+### Visualizing Power
+
+Now that we have run the needed simulations, we can make a plot showing the proportion of times the null was rejected against the different true values of μ we included. In this case, let us consider the null hypothesis to be:
+
+H_0: μ = 0, with α = 0.05
+
+First, we need to calculate the proportion of time the null was rejected or, in other words, the power of the test. We can do this by creating a variabel where we check if the saved p_values for each iteration are below our significance level (α = 0.05), which would allow us to reject the null. Then, we can just simply group the results of our simulation (using _group_by()_) by each true value of μ and calculate the mean of the rejection value just created:
+
+```{r reject_null}
+
+# Creating a new logical variable in our simulation data frame:
+
+sim_p3_reject =
+  sim_p3_results %>% 
+  mutate(
+    reject = (p_value < 0.05) # this would yield either TRUE or FALSE
+  ) %>% 
+  group_by(mu_value) %>% # We can now gorup by our true μ values
+  summarize(
+    reject_prop = mean(reject)
+  )
+
+# We can now just make use of ggplot in order to create our plot:
+
+sim_p3_reject %>% 
+  ggplot(aes(x = mu_value, y = reject_prop)) + 
+  geom_line(color = "orange") + 
+  geom_point(color = "darkorange") +
+  theme_minimal() +
+  labs(
+    title = "Proportion of Null Rejection (Power) by True μ Value",
+    x = "True μ",
+    y = "Proportion of Null Hypothesis Rejection",
+  )
+
+```
+
+**Describing the Association:** From the figure above, we can see that there is an positive association between the effect size (the value of the true μ) and power (the proportion of times the null hypothesis gets rejected).
+
+########## EXPLAIN MORE HERE...
+
+### The Fight Between μ̂ against the True μ
+
+Now, let's create another plot showing the showing the average estimate of μ̂ against the true value of μ. To do this, we can take a similar approach like the one we did above, grouping by the true μ value and then, since we already hae a _sample_mu_ variable, we can simply find the mean of it using _summarize()_. Then, we can just create the plot using ggplot:
+
+```{r muhat_vs_mu}
+
+p3_plot_2 =
+  sim_p3_results %>% 
+  group_by(mu_value) %>% 
+  summarize(
+    mean_sample_mu = mean(sample_mu) # getting our average values
+  ) %>% 
+  ggplot(aes(x = mu_value, y = mean_sample_mu)) + 
+  geom_line(color = "lightgreen") + 
+  geom_point(color = "darkgreen") +
+  theme_minimal() +
+  labs(
+    title = "Average Estimate μ-hat vs. True μ Value",
+    x = "True μ",
+    y = "Average Estimate μ-hat",
+  )
+
+# Now let's visualize the plot:
+
+p3_plot_2
+
+```
+
+Now, we can make a second plot following the same process as above, but only for the samples in which we rejected the null. I can make use of the _sim_p3_reject_ data frame I created above, since this already contains a variable assessing if we can reject the null hypothesis:
+
+```{r muhat_vs_mu_rejet}
+
+
+
+
+```
+
+
+
 
