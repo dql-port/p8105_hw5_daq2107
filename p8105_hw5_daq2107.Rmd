@@ -239,8 +239,7 @@ tidy_long_df %>%
 **Describing the Plot:** As we can see from the trend above, the study subjects in the control arm are...
 
 
-####### PENDING
-
+###### need to comment on differences between groups
 
 
 ## Problem 3: Analyzing Longitudinal Study Data
@@ -350,16 +349,16 @@ sim_p3_reject %>%
   geom_point(color = "darkorange") +
   theme_minimal() +
   labs(
-    title = "Proportion of Null Rejection (Power) by True μ Value",
+    title = "Proportion of Null Hypothesis Rejection (Power) by True μ Value",
     x = "True μ",
-    y = "Proportion of Null Hypothesis Rejection",
+    y = "Power",
   )
 
 ```
 
-**Describing the Association:** From the figure above, we can see that there is an positive association between the effect size (the value of the true μ) and power (the proportion of times the null hypothesis gets rejected).
+**Describing the Association:** From the figure above, we can see that there is an undeniable positive association between the effect size (the true value of μ) and power (the proportion of times the null hypothesis gets rejected).
 
-########## EXPLAIN MORE HERE...
+The more that the true population means starts distancing itself from zero, the proportion of null hypothesis being rejected increases. We can see this rellationship is sigmoidal, and about when true μ = 4, the proportion of all rejected null hypothesis becomes extremely close to 1 (100% of samples).
 
 ### The Fight Between μ̂ against the True μ
 
@@ -461,7 +460,6 @@ p3_plot_4 =
   theme_minimal() +
   labs(
     title = "Average Estimated μ-hat vs. True μ Value*",
-    subtitle = "*Only Samples Where Null Hypothesis Was Rejected",
     x = "True μ",
     y = "Average Estimated μ-hat",
     color = "Sample Type"
@@ -474,5 +472,12 @@ p3_plot_4
 
 ```
 
-**Plots Description & Question Answer:** From the 
+**Plots Description & Question Answer:** 
+The sample average of μ-hat across tests for which the null is rejected is only approximately equal to the true value of μ when the true μ is large (μ = {4, 5, 6}). 
+
+As we can see from the three plots above, when considering all the samples, the values for the estimated μ-hat almost perfectly aligns with the values of the true μ. This result was interesting to me, but I believe it makes sense since, when taking all possible samples from the iteration, as sample size increases the more that the estimate μ approximates the true μ. This is because, when we consider all 5,000 simulated samples, just like we saw in our _Simulation_ lecture, the sample mean estimates are expected to be more centered around the true population mean.
+
+Moreover, we can see that when we only take the samples for which we reject the null hypothesis, the average estimated μ-hat deviates from the true μ values, in particular when μ = {1, 2 3}. This also makes sense, and it is actually in agreement with what we observed in our Power vs. μ graph: when we have very small power, only very extreme observations will be able to yield a p-value that is below the 0.05 significance threshold. However, as we increase in our true μ values, power increases (the probability of rejecting the null hypotheis) also increases, and thus more values of our parameter estimates will be accurately rejected, approximating the true μ. We can see that in both the power vs. true effect and in the average estimated μ vs. true μ graphs, it is at true μ = 4 when we lose distinction between our parameter estimate and our true value.
+
+## The End :) Have a wonderful day!
 
